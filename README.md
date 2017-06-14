@@ -4,7 +4,7 @@ Write SQL, read JSON.
 
 ## Usage
 
-    $ jsqlon <database connection string>
+    $ jsqlon <JDBC connection string>
 
 Write semicolon-terminated SQL to STDIN. Read JSON from STDOUT.
 
