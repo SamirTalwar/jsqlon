@@ -1,12 +1,18 @@
 (ns jsqlon.main
   (:gen-class)
   (import java.io.BufferedReader)
-  (:require [clojure.java.jdbc :as jdbc]))
+  (:require [clojure.string :as string]
+            [clojure.java.jdbc :as jdbc]))
+
+(defn run-query [db sql]
+  (if (string/starts-with? (string/lower-case sql) "select ")
+    (jdbc/query db sql)
+    (jdbc/execute! db sql)))
 
 (defn run [connection-uri input]
   (jdbc/with-db-connection [db {:connection-uri (str "jdbc:" connection-uri)}]
-    (doseq [query input]
-      (println (jdbc/query db query)))))
+    (doseq [sql input]
+      (println (run-query db sql)))))
 
 (defn -main [connection-uri]
   (try
