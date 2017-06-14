@@ -1,0 +1,8 @@
+# Maven
+pom.xml
+pom.xml.asc
+/target
+
+# Leiningen
+/.lein-*
+/.nrepl-port
