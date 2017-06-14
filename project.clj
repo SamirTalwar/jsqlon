@@ -6,7 +6,9 @@
   :dependencies [[org.clojure/clojure "1.8.0"]
                  [org.clojure/java.jdbc "0.7.0-alpha3"]
                  [com.fasterxml.jackson.core/jackson-databind "2.8.9"]
-                 [mysql/mysql-connector-java "6.0.6"]]
+
+                 [mysql/mysql-connector-java "6.0.6"]
+                 [org.postgresql/postgresql "42.1.1"]]
   :main ^:skip-aot jsqlon.main
   :target-path "target/%s"
   :profiles {:uberjar {:aot :all}})

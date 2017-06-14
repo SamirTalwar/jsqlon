@@ -5,6 +5,8 @@
             [clojure.string :as string]
             [jsqlon.json :as json]))
 
+(Class/forName "org.postgresql.Driver")
+
 (defn run-query [db sql]
   (if (string/starts-with? (string/lower-case sql) "select ")
     (jdbc/query db sql)
