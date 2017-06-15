@@ -8,14 +8,14 @@
 (Class/forName "org.postgresql.Driver")
 
 (defn run-query [db sql]
-  (if (string/starts-with? (string/lower-case sql) "select ")
-    (jdbc/query db sql)
-    (jdbc/execute! db sql)))
+  (json/write-str (if (string/starts-with? (string/lower-case sql) "select ")
+                    (jdbc/query db sql)
+                    (jdbc/execute! db sql))))
 
 (defn run [connection-uri input]
   (jdbc/with-db-connection [db {:connection-uri (str "jdbc:" connection-uri)}]
     (doseq [sql input]
-      (println (json/write-str (run-query db sql))))))
+      (println (run-query db sql)))))
 
 (defn -main [connection-uri]
   (try

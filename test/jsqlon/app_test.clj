@@ -2,6 +2,7 @@
   (:require [clojure.java.jdbc :as jdbc]
             [clojure.java.shell :as shell]
             [midje.sweet :refer :all]
+            [jsqlon.json :as json]
             [jsqlon.main :refer :all]))
 
 (def database-uris
@@ -33,13 +34,13 @@
 
    (fact "JSQLON can insert and query data"
          (jdbc/with-db-connection [db {:connection-uri (str "jdbc:" ?connection-uri)}]
-           (run-query db (str "INSERT INTO " @table-name " VALUES "
-                              "('Alice', '1978-02-01'),"
-                              "('Bob',   NULL)"))
+           (json/read-str (run-query db (str "INSERT INTO " @table-name " VALUES "
+                                             "('Alice', '1978-02-01'),"
+                                             "('Bob',   NULL)")))
            => [2]
-           (run-query db (str "SELECT * FROM " @table-name))
-           => [{:name "Alice", :dob #inst "1978-02-01"}
-               {:name "Bob",   :dob nil}])))
+           (json/read-str (run-query db (str "SELECT * FROM " @table-name)))
+           => [{"name" "Alice", "dob" "1978-02-01"}
+               {"name" "Bob",   "dob" nil}])))
 
   ?db-name     ?connection-uri
   "MySQL"      "mysql://localhost/jsqlon_test?user=root&useSSL=false"

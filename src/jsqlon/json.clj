@@ -16,3 +16,6 @@
 
 (defn write-str [value]
   (.writeValueAsString mapper value))
+
+(defn read-str [json]
+  (.readValue mapper json java.util.ArrayList))
