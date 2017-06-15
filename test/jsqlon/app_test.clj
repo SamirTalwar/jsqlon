@@ -25,19 +25,21 @@
     (before :facts
             (jdbc/with-db-connection [db {:connection-uri (str "jdbc:" ?connection-uri)}]
               (jdbc/execute! db (jdbc/create-table-ddl @table-name
-                                                       [[:name "varchar(255)" "not null"]
-                                                        [:age "int"]]))))
+                                                       [[:name "VARCHAR(255)" "NOT NULL"]
+                                                        [:dob "DATE"]]))))
     (after :facts
            (jdbc/with-db-connection [db {:connection-uri (str "jdbc:" ?connection-uri)}]
              (jdbc/execute! db (jdbc/drop-table-ddl @table-name))))]
 
    (fact "JSQLON can insert and query data"
          (jdbc/with-db-connection [db {:connection-uri (str "jdbc:" ?connection-uri)}]
-           (run-query db (str "INSERT INTO " @table-name " VALUES ('Alice', 39), ('Bob', NULL)"))
+           (run-query db (str "INSERT INTO " @table-name " VALUES "
+                              "('Alice', '1978-02-01'),"
+                              "('Bob',   NULL)"))
            => [2]
            (run-query db (str "SELECT * FROM " @table-name))
-           => [{:name "Alice", :age 39}
-               {:name "Bob", :age nil}])))
+           => [{:name "Alice", :dob #inst "1978-02-01"}
+               {:name "Bob",   :dob nil}])))
 
   ?db-name     ?connection-uri
   "MySQL"      "mysql://localhost/jsqlon_test?user=root&useSSL=false"
