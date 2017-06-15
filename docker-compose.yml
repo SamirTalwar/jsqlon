@@ -1,0 +1,38 @@
+version: '2.1'
+
+services:
+  databases:
+    image: busybox
+    command: ['echo', 'All databases are up.']
+    depends_on:
+      mysql:
+        condition: service_healthy
+      postgresql:
+        condition: service_healthy
+
+  mysql:
+    image: mysql:5.7
+    ports:
+      - 3306:3306
+    environment:
+      MYSQL_ALLOW_EMPTY_PASSWORD: 'true'
+      MYSQL_DATABASE: 'jsqlon_test'
+    volumes:
+      - mysql:/var/lib/mysql
+    healthcheck:
+      test: 'mysql -D "jsqlon_test" -e "SELECT 1"'
+
+  postgresql:
+    image: postgres:9.6
+    ports:
+      - 5432:5432
+    environment:
+      POSTGRES_DB: 'jsqlon_test'
+    volumes:
+      - postgresql:/var/lib/postgresql/data
+    healthcheck:
+      test: 'psql -U "postgres" -d "jsqlon_test" -c "SELECT 1"'
+
+volumes:
+  mysql: {}
+  postgresql: {}

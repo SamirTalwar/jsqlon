@@ -11,4 +11,6 @@
                  [org.postgresql/postgresql "42.1.1"]]
   :main ^:skip-aot jsqlon.main
   :target-path "target/%s"
-  :profiles {:uberjar {:aot :all}})
+  :profiles {:uberjar {:aot :all}
+             :dev {:dependencies [[midje "1.8.3"]]
+                   :plugins [[lein-midje "3.2.1"]]}})
