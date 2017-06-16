@@ -1,4 +1,5 @@
 (ns jsqlon.app-test
+  (:import java.sql.DriverManager)
   (:require [clojure.java.jdbc :as jdbc]
             [clojure.java.shell :as shell]
             [midje.sweet :refer :all]
@@ -33,12 +34,12 @@
              (jdbc/execute! db (jdbc/drop-table-ddl @table-name))))]
 
    (fact "JSQLON can insert and query data"
-         (jdbc/with-db-connection [db {:connection-uri (str "jdbc:" ?connection-uri)}]
-           (json/read-str (run-query db (str "INSERT INTO " @table-name " VALUES "
-                                             "('Alice', '1978-02-01'),"
-                                             "('Bob',   NULL)")))
-           => [2]
-           (json/read-str (run-query db (str "SELECT * FROM " @table-name)))
+         (with-open [connection (DriverManager/getConnection (str "jdbc:" ?connection-uri))]
+           (json/read-str (run-query connection (str "INSERT INTO " @table-name " VALUES "
+                                                     "('Alice', '1978-02-01'),"
+                                                     "('Bob',   NULL)")))
+           => nil
+           (json/read-str (run-query connection (str "SELECT * FROM " @table-name)))
            => [{"name" "Alice", "dob" "1978-02-01"}
                {"name" "Bob",   "dob" nil}])))
 

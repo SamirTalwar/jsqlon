@@ -1,21 +1,23 @@
 (ns jsqlon.main
   (:gen-class)
-  (:import java.io.BufferedReader)
-  (:require [clojure.java.jdbc :as jdbc]
-            [clojure.string :as string]
+  (:import java.io.BufferedReader
+           java.sql.DriverManager)
+  (:require [clojure.string :as string]
             [jsqlon.json :as json]))
 
 (Class/forName "org.postgresql.Driver")
 
-(defn run-query [db sql]
-  (json/write-str (if (string/starts-with? (string/lower-case sql) "select ")
-                    (jdbc/query db sql)
-                    (jdbc/execute! db sql))))
+(defn run-query [connection sql]
+  (let [statement (.prepareStatement connection sql)
+        has-result-set (.execute statement)
+        result-set (if has-result-set (.getResultSet statement) nil)
+        results (if result-set (resultset-seq result-set) nil)]
+    (json/write-str results)))
 
 (defn run [connection-uri input]
-  (jdbc/with-db-connection [db {:connection-uri (str "jdbc:" connection-uri)}]
+  (with-open [connection (DriverManager/getConnection (str "jdbc:" connection-uri))]
     (doseq [sql input]
-      (println (run-query db sql)))))
+      (println (run-query connection sql)))))
 
 (defn -main [connection-uri]
   (try
