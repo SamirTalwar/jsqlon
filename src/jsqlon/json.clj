@@ -1,5 +1,9 @@
 (ns jsqlon.json
-  (:import [com.fasterxml.jackson.databind ObjectMapper module.SimpleModule ser.std.StdSerializer]))
+  (:import [com.fasterxml.jackson.databind
+            ObjectMapper
+            module.SimpleModule
+            node.JsonNodeType
+            ser.std.StdSerializer]))
 
 (def keyword-serializer
   (proxy [StdSerializer] [clojure.lang.Keyword]
@@ -18,4 +22,12 @@
   (.writeValueAsString mapper value))
 
 (defn read-str [json]
-  (.readValue mapper json java.util.ArrayList))
+  (let [tree (.readTree mapper json)
+        node-type (.getNodeType tree)]
+    (case (.name node-type)
+      "ARRAY" (.convertValue mapper tree java.util.ArrayList)
+      "BOOLEAN" (.convertValue mapper tree Boolean)
+      "NULL" nil
+      "NUMBER" (.convertValue mapper tree Double)
+      "OBJECT" (.convertValue mapper tree java.util.Map)
+      "STRING" (.convertValue mapper tree String))))

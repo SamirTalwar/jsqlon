@@ -28,20 +28,22 @@
             (jdbc/with-db-connection [db {:connection-uri (str "jdbc:" ?connection-uri)}]
               (jdbc/execute! db (jdbc/create-table-ddl @table-name
                                                        [[:name "VARCHAR(255)" "NOT NULL"]
-                                                        [:dob "DATE"]]))))
+                                                        [:dob "DATE"]
+                                                        [:meta "JSON"]]))))
     (after :facts
            (jdbc/with-db-connection [db {:connection-uri (str "jdbc:" ?connection-uri)}]
              (jdbc/execute! db (jdbc/drop-table-ddl @table-name))))]
 
    (fact "JSQLON can insert and query data"
          (with-open [connection (connect-to ?connection-uri)]
-           (json/read-str (run-query connection (str "INSERT INTO " @table-name " VALUES "
-                                                     "('Alice', '1978-02-01'),"
-                                                     "('Bob',   NULL)")))
+           (json/read-str (run-query connection
+                                     (str "INSERT INTO " @table-name " VALUES "
+                                          "('Alice', '1978-02-01', NULL),"
+                                          "('Bob',   NULL,         '{\"talks-to\": \"Alice\", \"height\": 187}')")))
            => nil
            (json/read-str (run-query connection (str "SELECT * FROM " @table-name)))
-           => [{"name" "Alice", "dob" "1978-02-01"}
-               {"name" "Bob",   "dob" nil}])))
+           => [{"name" "Alice", "dob" "1978-02-01", "meta" nil}
+               {"name" "Bob",   "dob" nil,          "meta" {"talks-to" "Alice", "height" 187}}])))
 
   ?db-name     ?connection-uri
   "MySQL"      "mysql://localhost/jsqlon_test?user=root&useSSL=false"
