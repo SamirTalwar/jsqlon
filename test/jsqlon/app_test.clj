@@ -30,7 +30,7 @@
     (before :facts
             (jdbc/with-db-connection [db {:connection-uri (str "jdbc:" ?connection-uri)}]
               (jdbc/execute! db (jdbc/create-table-ddl @table-name
-                                                       [[:name "VARCHAR(255)" "NOT NULL"]
+                                                       [[:name "TEXT" "NOT NULL"]
                                                         [:dob "DATE"]
                                                         [:meta "JSON"]]))))
     (after :facts

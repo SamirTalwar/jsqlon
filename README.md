@@ -8,9 +8,19 @@ Write SQL, read JSON.
 
 Write semicolon-terminated SQL to STDIN. Read JSON from STDOUT.
 
-For example:
+For example, with a PostgreSQL table named `people` with four columns: 
 
-    $ jsqlon
+  * `id INT`
+  * `name TEXT`
+  * `dob DATE` 
+  * `meta JSON`
+
+```
+$ jsqlon 'postgresql://localhost/people?user=me&password=knockknock'
+SELECT * FROM people
+[{"id": 1, "name": "Alice", "dob": "1978-02-01", "meta": null},
+ {"id": 2, "name": "Bob",   "dob": null,         "meta": {"talks-to": "Alice", "height": 187}}]
+```
 
 ## License
 
