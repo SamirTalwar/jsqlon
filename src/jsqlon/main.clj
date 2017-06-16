@@ -7,6 +7,9 @@
 
 (Class/forName "org.postgresql.Driver")
 
+(defn connect-to [connection-uri]
+  (DriverManager/getConnection (str "jdbc:" connection-uri)))
+
 (defn run-query [connection sql]
   (let [statement (.prepareStatement connection sql)
         has-result-set (.execute statement)
@@ -15,7 +18,7 @@
     (json/write-str results)))
 
 (defn run [connection-uri input]
-  (with-open [connection (DriverManager/getConnection (str "jdbc:" connection-uri))]
+  (with-open [connection (connect-to connection-uri)]
     (doseq [sql input]
       (println (run-query connection sql)))))
 

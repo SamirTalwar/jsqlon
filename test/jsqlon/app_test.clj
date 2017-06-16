@@ -34,7 +34,7 @@
              (jdbc/execute! db (jdbc/drop-table-ddl @table-name))))]
 
    (fact "JSQLON can insert and query data"
-         (with-open [connection (DriverManager/getConnection (str "jdbc:" ?connection-uri))]
+         (with-open [connection (connect-to ?connection-uri)]
            (json/read-str (run-query connection (str "INSERT INTO " @table-name " VALUES "
                                                      "('Alice', '1978-02-01'),"
                                                      "('Bob',   NULL)")))
