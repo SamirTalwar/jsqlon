@@ -22,12 +22,4 @@
   (.writeValueAsString mapper value))
 
 (defn read-str [json]
-  (let [tree (.readTree mapper json)
-        node-type (.getNodeType tree)]
-    (case (.name node-type)
-      "ARRAY" (.convertValue mapper tree java.util.ArrayList)
-      "BOOLEAN" (.convertValue mapper tree Boolean)
-      "NULL" nil
-      "NUMBER" (.convertValue mapper tree Double)
-      "OBJECT" (.convertValue mapper tree java.util.Map)
-      "STRING" (.convertValue mapper tree String))))
+  (.readTree mapper json))

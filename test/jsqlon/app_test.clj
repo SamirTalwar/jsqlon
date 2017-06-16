@@ -12,6 +12,9 @@
 
 (def table-name (atom nil))
 
+(defn parse-json [json]
+  (.convertValue json/mapper (json/read-str json) java.util.List))
+
 (against-background
  [(before :contents
           (let [result (shell/sh "docker-compose" "up" "databases")]
@@ -36,12 +39,12 @@
 
    (fact "JSQLON can insert and query data"
          (with-open [connection (connect-to ?connection-uri)]
-           (json/read-str (run-query connection
-                                     (str "INSERT INTO " @table-name " VALUES "
-                                          "('Alice', '1978-02-01', NULL),"
-                                          "('Bob',   NULL,         '{\"talks-to\": \"Alice\", \"height\": 187}')")))
+           (parse-json (run-query connection
+                                  (str "INSERT INTO " @table-name " VALUES "
+                                       "('Alice', '1978-02-01', NULL),"
+                                       "('Bob',   NULL,         '{\"talks-to\": \"Alice\", \"height\": 187}')")))
            => nil
-           (json/read-str (run-query connection (str "SELECT * FROM " @table-name)))
+           (parse-json (run-query connection (str "SELECT * FROM " @table-name)))
            => [{"name" "Alice", "dob" "1978-02-01", "meta" nil}
                {"name" "Bob",   "dob" nil,          "meta" {"talks-to" "Alice", "height" 187}}])))
 
