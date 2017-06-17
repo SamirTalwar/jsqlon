@@ -18,8 +18,13 @@ For example, with a PostgreSQL table named `people` with four columns:
 ```
 $ jsqlon 'postgresql://localhost/people?user=me&password=knockknock&stringtype=unspecified'
 {"query": "SELECT * FROM people WHERE dob < ?", parameters: ["1980-01-01"]}
-[{"id": 1, "name": "Alice", "dob": "1978-02-01", "meta": null},
- {"id": 2, "name": "Bob",   "dob": "1978-02-01", "meta": {"talks-to": "Alice", "height": 187}}]
+{
+  "success": true,
+  "results: [
+    {"id": 1, "name": "Alice", "dob": "1978-02-01", "meta": null},
+    {"id": 2, "name": "Bob",   "dob": "1978-02-01", "meta": {"talks-to": "Alice", "height": 187}}
+  ]
+}
 ```
 
 ## License

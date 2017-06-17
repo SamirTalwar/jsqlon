@@ -50,18 +50,19 @@
         has-result-set (.execute statement)
         result-set (if has-result-set (.getResultSet statement) nil)]
     (if-not result-set
-      (json/write-str nil)
+      (json/write-str {:success true})
       (let [metadata (.getMetaData result-set)
             column-count (.getColumnCount metadata)
             column-types (into {} (map #(get-column-type metadata %)
                                        (range column-count)))
             results (map #(transform-row column-types %) (resultset-seq result-set))]
-        (json/write-str results)))))
+        (json/write-str {:success true
+                         :results results})))))
 
 (defn run [connection-uri input]
   (with-open [connection (connect-to connection-uri)]
     (doseq [request input]
-      (let [{query :query, parameters :parameters} (json/read-str request)]
+      (let [{query "query", parameters "parameters"} (.readValue json/mapper request java.util.Map)]
         (println (run-query connection query parameters))))))
 
 (defn -main [connection-uri]
