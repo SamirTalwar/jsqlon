@@ -40,14 +40,14 @@
    (fact "JSQLON can insert and query data"
          (with-open [connection (connect-to ?connection-uri)]
            (parse-json (run-query connection
-                                  (str "INSERT INTO " @table-name " VALUES "
-                                       "('Alice', '1978-02-01', NULL),"
-                                       "('Bob',   NULL,         '{\"talks-to\": \"Alice\", \"height\": 187}')")))
+                                  (str "INSERT INTO " @table-name " VALUES (?, ?, ?), (?, ?, ?)")
+                                  ["Alice" "1978-02-01" nil
+                                   "Bob"  nil           "{\"talks-to\": \"Alice\", \"height\": 187}"]))
            => nil
-           (parse-json (run-query connection (str "SELECT * FROM " @table-name)))
+           (parse-json (run-query connection (str "SELECT * FROM " @table-name) []))
            => [{"name" "Alice", "dob" "1978-02-01", "meta" nil}
                {"name" "Bob",   "dob" nil,          "meta" {"talks-to" "Alice", "height" 187}}])))
 
   ?db-name     ?connection-uri
   "MySQL"      "mysql://localhost/jsqlon_test?user=root&useSSL=false"
-  "PostgreSQL" "postgresql://localhost/jsqlon_test?user=postgres"))
+  "PostgreSQL" "postgresql://localhost/jsqlon_test?user=postgres&stringtype=unspecified"))

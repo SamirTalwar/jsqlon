@@ -1,7 +1,8 @@
 (ns jsqlon.main
   (:gen-class)
   (:import java.io.BufferedReader
-           java.sql.DriverManager)
+           java.sql.DriverManager
+           [java.time LocalDate LocalDateTime LocalTime ZonedDateTime])
   (:require [clojure.string :as string]
             [jsqlon.json :as json]))
 
@@ -32,8 +33,20 @@
 (defn transform-row [column-types row]
   (into {} (map #(transform-field column-types %) row)))
 
-(defn run-query [connection sql]
-  (let [statement (.prepareStatement connection sql)
+(defn construct-statement [connection query parameters]
+  (let [statement (.prepareStatement connection query)
+        actual-parameter-count (count parameters)
+        parameter-metadata (.getParameterMetaData statement)
+        expected-parameter-count (.getParameterCount parameter-metadata)]
+    (when (not= expected-parameter-count actual-parameter-count)
+      (throw (IllegalArgumentException.
+              (str "Expected " expected-parameter-count " parameters but got " actual-parameter-count "."))))
+    (doseq [[i param] (map list (drop 1 (range)) parameters)]
+      (.setObject statement i param))
+    statement))
+
+(defn run-query [connection query parameters]
+  (let [statement (construct-statement connection query parameters)
         has-result-set (.execute statement)
         result-set (if has-result-set (.getResultSet statement) nil)]
     (if-not result-set
@@ -47,8 +60,9 @@
 
 (defn run [connection-uri input]
   (with-open [connection (connect-to connection-uri)]
-    (doseq [sql input]
-      (println (run-query connection sql)))))
+    (doseq [request input]
+      (let [{query :query, parameters :parameters} (json/read-str request)]
+        (println (run-query connection query parameters))))))
 
 (defn -main [connection-uri]
   (try

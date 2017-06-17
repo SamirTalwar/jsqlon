@@ -6,7 +6,7 @@ Write SQL, read JSON.
 
     $ jsqlon <JDBC connection string>
 
-Write semicolon-terminated SQL to STDIN. Read JSON from STDOUT.
+Write JSON-wrapped SQL to STDIN. Read JSON from STDOUT.
 
 For example, with a PostgreSQL table named `people` with four columns: 
 
@@ -16,10 +16,10 @@ For example, with a PostgreSQL table named `people` with four columns:
   * `meta JSON`
 
 ```
-$ jsqlon 'postgresql://localhost/people?user=me&password=knockknock'
-SELECT * FROM people
+$ jsqlon 'postgresql://localhost/people?user=me&password=knockknock&stringtype=unspecified'
+{"query": "SELECT * FROM people WHERE dob < ?", parameters: ["1980-01-01"]}
 [{"id": 1, "name": "Alice", "dob": "1978-02-01", "meta": null},
- {"id": 2, "name": "Bob",   "dob": null,         "meta": {"talks-to": "Alice", "height": 187}}]
+ {"id": 2, "name": "Bob",   "dob": "1978-02-01", "meta": {"talks-to": "Alice", "height": 187}}]
 ```
 
 ## License
