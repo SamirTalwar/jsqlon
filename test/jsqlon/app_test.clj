@@ -44,7 +44,7 @@
                                   ["Alice" "1978-02-01" nil
                                    "Bob"  nil           "{\"talks-to\": \"Alice\", \"height\": 187}"]))
            => {"success" true}
-           (parse-json (run-query connection (str "SELECT * FROM " @table-name) []))
+           (parse-json (run-query connection (str "SELECT * FROM " @table-name) nil))
            => {"success" true
                "results" [{"name" "Alice", "dob" "1978-02-01", "meta" nil}
                           {"name" "Bob",   "dob" nil,          "meta" {"talks-to" "Alice", "height" 187}}]}))
@@ -53,7 +53,19 @@
          (with-open [connection (connect-to ?connection-uri)]
            (parse-json (run-query connection "SELECT * FROM" []))
            => (just {"success" false
-                     "message" #"syntax"}))))
+                     "message" #"syntax"})))
+
+   (fact "reports missing or invalid input"
+         (with-open [connection (connect-to ?connection-uri)]
+           (parse-json (run-query connection 3 []))
+           => (just {"success" false
+                     "message" #"Invalid input."})
+           (parse-json (run-query connection nil []))
+           => (just {"success" false
+                     "message" #"Invalid input."})
+           (parse-json (run-query connection "SELECT * FROM a_table" 7))
+           => (just {"success" false
+                     "message" #"Invalid input."}))))
 
   ?db-name     ?connection-uri
   "MySQL"      "mysql://localhost/jsqlon_test?user=root&useSSL=false"

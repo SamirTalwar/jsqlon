@@ -11,6 +11,9 @@
 (defn connect-to [connection-uri]
   (DriverManager/getConnection (str "jdbc:" connection-uri)))
 
+(defn invalid-input-exception []
+  (IllegalArgumentException. "Invalid input.\nFormat:\n{\"query\": \"SQL\", \"parameters\": [1, 'two', 3.0]}"))
+
 (defn get-column-type [metadata i]
   {(keyword (.getColumnName metadata (+ i 1)))
    (string/lower-case (.getColumnTypeName metadata (+ i 1)))})
@@ -45,9 +48,14 @@
       (.setObject statement i param))
     statement))
 
-(defn run-query [connection query parameters]
+(defn run-query [connection query parameter-list]
   (try
-    (let [statement (construct-statement connection query parameters)
+    (when (not (string? query))
+      (throw (invalid-input-exception)))
+    (let [parameters (if (nil? parameter-list)
+                       []
+                       (try (vec parameter-list) (catch Exception e (throw (invalid-input-exception)))))
+          statement (construct-statement connection query parameters)
           has-result-set (.execute statement)
           result-set (if has-result-set (.getResultSet statement) nil)]
       (if-not result-set
@@ -66,7 +74,7 @@
 (defn run [connection-uri input]
   (with-open [connection (connect-to connection-uri)]
     (doseq [request input]
-      (let [{query "query", parameters "parameters"} (.readValue json/mapper request java.util.Map)]
+      (let [{query "query", parameters "parameters" :or {parameters []}} (.readValue json/mapper request java.util.Map)]
         (println (run-query connection query parameters))))))
 
 (defn -main [connection-uri]
