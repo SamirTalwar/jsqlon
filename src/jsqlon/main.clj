@@ -46,18 +46,22 @@
     statement))
 
 (defn run-query [connection query parameters]
-  (let [statement (construct-statement connection query parameters)
-        has-result-set (.execute statement)
-        result-set (if has-result-set (.getResultSet statement) nil)]
-    (if-not result-set
-      (json/write-str {:success true})
-      (let [metadata (.getMetaData result-set)
-            column-count (.getColumnCount metadata)
-            column-types (into {} (map #(get-column-type metadata %)
-                                       (range column-count)))
-            results (map #(transform-row column-types %) (resultset-seq result-set))]
-        (json/write-str {:success true
-                         :results results})))))
+  (try
+    (let [statement (construct-statement connection query parameters)
+          has-result-set (.execute statement)
+          result-set (if has-result-set (.getResultSet statement) nil)]
+      (if-not result-set
+        (json/write-str {:success true})
+        (let [metadata (.getMetaData result-set)
+              column-count (.getColumnCount metadata)
+              column-types (into {} (map #(get-column-type metadata %)
+                                         (range column-count)))
+              results (map #(transform-row column-types %) (resultset-seq result-set))]
+          (json/write-str {:success true
+                           :results results}))))
+    (catch Exception e
+      (json/write-str {:success false
+                       :message (.getMessage e)}))))
 
 (defn run [connection-uri input]
   (with-open [connection (connect-to connection-uri)]

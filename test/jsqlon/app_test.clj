@@ -13,7 +13,7 @@
 (def table-name (atom nil))
 
 (defn parse-json [json]
-  (.convertValue json/mapper (json/read-str json) java.util.Map))
+  (into {} (.convertValue json/mapper (json/read-str json) java.util.Map)))
 
 (against-background
  [(before :contents
@@ -47,7 +47,13 @@
            (parse-json (run-query connection (str "SELECT * FROM " @table-name) []))
            => {"success" true
                "results" [{"name" "Alice", "dob" "1978-02-01", "meta" nil}
-                          {"name" "Bob",   "dob" nil,          "meta" {"talks-to" "Alice", "height" 187}}]})))
+                          {"name" "Bob",   "dob" nil,          "meta" {"talks-to" "Alice", "height" 187}}]}))
+
+   (fact "reports invalid SQL"
+         (with-open [connection (connect-to ?connection-uri)]
+           (parse-json (run-query connection "SELECT * FROM" []))
+           => (just {"success" false
+                     "message" #"syntax"}))))
 
   ?db-name     ?connection-uri
   "MySQL"      "mysql://localhost/jsqlon_test?user=root&useSSL=false"
