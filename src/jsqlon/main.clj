@@ -79,39 +79,55 @@
         (println (run-query connection query parameters))))))
 
 (def cli-options
-  [["-h" "--help" "Shows this help text."]])
+  [["-h" "--help"          "Shows this help text."]
+   [nil  "--stdin"         "Read from STDIN, and write to STDOUT. (default)"]
+   [nil  "--socket SOCKET" "Read and write to a Unix socket."]])
 
-(defn print-usage [options]
+(defn print-usage [summary]
   (do
     (println "Usage: jsqlon [OPTIONS] CONNECTION-URI")
     (println)
     (println "Options:")
-    (println (:summary options))))
+    (println summary)))
+
+(defn parse-opts [args]
+  (let [{[connection-uri] :arguments, options :options, summary :summary, errors :errors}
+        (cli/parse-opts args cli-options)]
+  (cond
+    errors
+    (do
+      (print-usage summary)
+      (println)
+      (println "Errors:")
+      (doseq [error errors]
+        (println "  - " error))
+      nil)
+
+    (nil? connection-uri)
+    (do
+      (print-usage summary)
+      nil)
+
+    (and (:stdin options) (:socket options))
+    (do
+      (print-usage summary)
+      (println)
+      (println "Errors:")
+      (println "  - Requires only one of `--stdin` or `--socket`.")
+      nil)
+
+    (:help options)
+    (print-usage summary)
+
+    :else
+    {:connection-uri connection-uri
+     :io (if (:socket options) [:socket (:socket options)] [:stdin])})))
 
 (defn -main [& args]
-  (let [options (cli/parse-opts args cli-options)
-        [connection-uri] (:arguments options)]
-    (cond
-      (:errors options)
-      (do
-        (print-usage options)
-        (println)
-        (println "Errors:")
-        (doseq [error (:errors options)]
-          (println "  - " error))
-        (System/exit 1))
-
-      (nil? connection-uri)
-      (do
-        (print-usage options)
-        (System/exit 1))
-
-      (:help (:options options))
-      (print-usage options)
-
-      :else
-      (try
-        (run connection-uri (line-seq (java.io.BufferedReader. *in*)))
-        (catch Exception exception
-          (.println *err* (.getMessage exception))
-          (System/exit 1))))))
+  (if-let [{connection-uri :connection-uri, io :io} (parse-opts args)]
+    (try
+      (run connection-uri (line-seq (java.io.BufferedReader. *in*)))
+      (catch Exception exception
+        (.println *err* (.getMessage exception))
+        (System/exit 1)))
+    (System/exit 1)))
