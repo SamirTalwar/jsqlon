@@ -4,6 +4,7 @@
            java.sql.DriverManager
            [java.time LocalDate LocalDateTime LocalTime ZonedDateTime])
   (:require [clojure.string :as string]
+            [clojure.tools.cli :as cli]
             [jsqlon.json :as json]))
 
 (Class/forName "org.postgresql.Driver")
@@ -77,9 +78,40 @@
       (let [{query "query", parameters "parameters" :or {parameters []}} (.readValue json/mapper request java.util.Map)]
         (println (run-query connection query parameters))))))
 
-(defn -main [connection-uri]
-  (try
-    (run connection-uri (line-seq (java.io.BufferedReader. *in*)))
-    (catch Exception exception
-      (.println *err* (.getMessage exception))
-      (System/exit 1))))
+(def cli-options
+  [["-h" "--help" "Shows this help text."]])
+
+(defn print-usage [options]
+  (do
+    (println "Usage: jsqlon [OPTIONS] CONNECTION-URI")
+    (println)
+    (println "Options:")
+    (println (:summary options))))
+
+(defn -main [& args]
+  (let [options (cli/parse-opts args cli-options)
+        [connection-uri] (:arguments options)]
+    (cond
+      (:errors options)
+      (do
+        (print-usage options)
+        (println)
+        (println "Errors:")
+        (doseq [error (:errors options)]
+          (println "  - " error))
+        (System/exit 1))
+
+      (nil? connection-uri)
+      (do
+        (print-usage options)
+        (System/exit 1))
+
+      (:help (:options options))
+      (print-usage options)
+
+      :else
+      (try
+        (run connection-uri (line-seq (java.io.BufferedReader. *in*)))
+        (catch Exception exception
+          (.println *err* (.getMessage exception))
+          (System/exit 1))))))

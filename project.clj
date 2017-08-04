@@ -4,6 +4,7 @@
   :license {:name "GNU General Public License, Version 3"
             :url "https://www.gnu.org/licenses/gpl-3.0.en.html"}
   :dependencies [[org.clojure/clojure "1.8.0"]
+                 [org.clojure/tools.cli "0.3.5"]
                  [com.fasterxml.jackson.core/jackson-databind "2.8.9"]
 
                  [mysql/mysql-connector-java "6.0.6"]
