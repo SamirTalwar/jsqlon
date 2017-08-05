@@ -1,4 +1,4 @@
-(defproject jsqlon "0.1.0-SNAPSHOT"
+(defproject jsqlon "0.2.0-SNAPSHOT"
   :description "Write SQL, read JSON."
   :url "https://github.com/SamirTalwar/jsqlon"
   :license {:name "GNU General Public License, Version 3"
