@@ -6,6 +6,9 @@
   :dependencies [[org.clojure/clojure "1.8.0"]
                  [org.clojure/tools.cli "0.3.5"]
                  [com.fasterxml.jackson.core/jackson-databind "2.8.9"]
+                 [com.fasterxml.jackson.datatype/jackson-datatype-jdk8 "2.8.9"]
+                 [com.fasterxml.jackson.datatype/jackson-datatype-jsr310 "2.8.9"]
+                 [com.fasterxml.jackson.module/jackson-module-parameter-names "2.8.9"]
                  [com.github.jnr/jnr-unixsocket "0.18"]
 
                  [mysql/mysql-connector-java "6.0.6"]
