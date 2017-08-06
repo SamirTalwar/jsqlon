@@ -72,13 +72,17 @@
       (json/write-str {:success false
                        :message (.getMessage e)}))))
 
-(defn evaluate [connection request]
-  (let [{query "query", parameters "parameters" :or {parameters []}}
-        (json/read-value request)]
-    (run-query connection query parameters)))
+(defn evaluate [connection input output]
+  (try
+    (doseq [{query "query", parameters "parameters" :or {parameters []}} (json/read-values input)]
+      (.println output (run-query connection query parameters)))
+    (catch Exception e
+      (let [message (.getMessage e)]
+        (.println output (json/write-str {:success false
+                                          :message (if message (first (.split message "\n")) nil)}))))))
 
 (defn -main [& args]
   (if-let [{connection-uri :connection-uri, io-mode :io} (cli/parse-opts args)]
     (with-open [connection (connect-to connection-uri)]
-      ((apply io/with-io io-mode) #(evaluate connection %)))
+      ((apply io/with-io io-mode) (partial evaluate connection)))
     (System/exit 1)))

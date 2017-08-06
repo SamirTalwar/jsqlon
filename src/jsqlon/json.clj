@@ -1,9 +1,9 @@
 (ns jsqlon.json
-  (:import [com.fasterxml.jackson.databind
-            ObjectMapper
-            module.SimpleModule
-            node.JsonNodeType
-            ser.std.StdSerializer]))
+  (:import com.fasterxml.jackson.core.JsonFactory
+           com.fasterxml.jackson.databind.ObjectMapper
+           com.fasterxml.jackson.databind.module.SimpleModule
+           com.fasterxml.jackson.databind.node.JsonNodeType
+           com.fasterxml.jackson.databind.ser.std.StdSerializer))
 
 (def keyword-serializer
   (proxy [StdSerializer] [clojure.lang.Keyword]
@@ -20,6 +20,13 @@
 
 (defn read-value [json]
   (.readValue mapper json java.util.Map))
+
+(defn read-values [input]
+  (let [object-reader (.reader mapper java.util.Map)
+        iterator (.readValues object-reader input)]
+    (take-while #(not= % nil) (repeatedly #(if (.hasNext iterator)
+                                             (.next iterator)
+                                             nil)))))
 
 (defn read-str [json]
   (.readTree mapper json))
