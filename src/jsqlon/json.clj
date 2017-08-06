@@ -32,9 +32,8 @@
 (defn read-values [input]
   (let [object-reader (.reader mapper java.util.Map)
         iterator (.readValues object-reader input)]
-    (take-while #(not= % nil) (repeatedly #(if (.hasNext iterator)
-                                             (.next iterator)
-                                             nil)))))
+    (take-while #(not= % nil) (repeatedly #(when (.hasNext iterator)
+                                             (.next iterator))))))
 
 (defn read-str [json]
   (.readTree mapper json))

@@ -39,7 +39,10 @@
 
     (while (>= (.select selector) 0)
       (let [iterator (.iterator (.selectedKeys selector))]
-        (doseq [selected-key (iterator-seq iterator)]
+        (doseq [selected-key
+                (take-while #(not= % nil)
+                            (repeatedly #(when (.hasNext iterator)
+                                           (.next iterator))))]
           (.remove iterator)
           ((.attachment selected-key)))))))
 
