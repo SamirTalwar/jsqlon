@@ -5,18 +5,19 @@
             :url "https://www.gnu.org/licenses/gpl-3.0.en.html"}
   :dependencies [[org.clojure/clojure "1.8.0"]
                  [org.clojure/tools.cli "0.3.5"]
-                 [com.fasterxml.jackson.core/jackson-databind "2.8.9"]
-                 [com.fasterxml.jackson.datatype/jackson-datatype-jdk8 "2.8.9"]
-                 [com.fasterxml.jackson.datatype/jackson-datatype-jsr310 "2.8.9"]
-                 [com.fasterxml.jackson.module/jackson-module-parameter-names "2.8.9"]
+                 [com.fasterxml.jackson.core/jackson-databind "2.9.0"]
+                 [com.fasterxml.jackson.datatype/jackson-datatype-jdk8 "2.9.0"]
+                 [com.fasterxml.jackson.datatype/jackson-datatype-jsr310 "2.9.0"]
+                 [com.fasterxml.jackson.module/jackson-module-parameter-names "2.9.0"]
                  [com.github.jnr/jnr-unixsocket "0.18"]
 
                  [mysql/mysql-connector-java "6.0.6"]
-                 [org.postgresql/postgresql "42.1.1"]]
+                 [org.postgresql/postgresql "42.1.4"]]
   :main ^:skip-aot jsqlon.main
   :target-path "target/%s"
   :jvm-opts ["-Duser.timezone=UTC"]
   :profiles {:uberjar {:aot :all}
-             :dev {:dependencies [[org.clojure/java.jdbc "0.7.0-alpha3"]
+             :dev {:dependencies [[org.clojure/java.jdbc "0.7.0"]
                                   [midje "1.8.3"]]
-                   :plugins [[lein-midje "3.2.1"]]}})
+                   :plugins [[lein-ancient "0.6.10"]
+                             [lein-midje "3.2.1"]]}})
