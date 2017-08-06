@@ -1,19 +1,23 @@
 (ns jsqlon.io
   (:import [java.io BufferedReader File IOException PrintWriter]
            [java.nio.channels Channels SelectionKey]
-           jnr.enxio.channels.NativeSelectorProvider
+           [jnr.enxio.channels NativeSelectorProvider]
            [jnr.unixsocket UnixServerSocket UnixServerSocketChannel UnixSocketAddress UnixSocketChannel]))
 
+(defn- run [behaviour reader writer]
+  (doseq [request (line-seq reader)]
+    (.println writer (behaviour request))))
+
 (defn- with-stdin [behaviour]
-  (doseq [request (line-seq (java.io.BufferedReader. *in*))]
-    (println (behaviour request))))
+  (let [reader (java.io.BufferedReader. *in*)
+        writer *out*]
+    (run behaviour reader writer)))
 
 (defn- client-actor [channel behaviour]
   (fn []
     (let [reader (BufferedReader. (Channels/newReader channel "UTF-8"))
           writer (PrintWriter. (Channels/newWriter channel "UTF-8") true)]
-      (doseq [request (line-seq reader)]
-        (.println writer (behaviour request)))
+      (run behaviour reader writer)
       (.close channel))))
 
 (defn- server-actor [channel selector behaviour]
