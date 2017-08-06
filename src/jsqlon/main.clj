@@ -13,7 +13,10 @@
   (DriverManager/getConnection (str "jdbc:" connection-uri)))
 
 (defn invalid-input-exception []
-  (IllegalArgumentException. "Invalid input.\nFormat:\n{\"query\": \"SQL\", \"parameters\": [1, 'two', 3.0]}"))
+  (IllegalArgumentException. (str "Invalid input.\n"
+                                  "Format:\n"
+                                  "{\"query\": \"SQL\","
+                                  " \"parameters\": [1, 'two', 3.0]}")))
 
 (defn get-column-type [metadata i]
   {(keyword (.getColumnName metadata (inc i)))
@@ -27,7 +30,8 @@
 (defmethod transform-json-field org.postgresql.util.PGobject [pg-object]
   (json/read-str (.getValue pg-object)))
 (defmethod transform-json-field :default [value]
-  (throw (IllegalArgumentException. (str "Cannot convert a value of type " (type value) " to JSON."))))
+  (throw (IllegalArgumentException.
+          (str "Cannot convert a value of type " (type value) " to JSON."))))
 
 (defn transform-field [column-types [field-name field-value]]
   {field-name (case (field-name column-types)
@@ -44,7 +48,8 @@
         expected-parameter-count (.getParameterCount parameter-metadata)]
     (when (not= expected-parameter-count actual-parameter-count)
       (throw (IllegalArgumentException.
-              (str "Expected " expected-parameter-count " parameters but got " actual-parameter-count "."))))
+              (str "Expected " expected-parameter-count " parameters"
+                   "but got " actual-parameter-count "."))))
     (doseq [[i param] (map list (drop 1 (range)) parameters)]
       (.setObject statement i param))
     statement))
@@ -54,7 +59,9 @@
     (when-not (string? query) (throw (invalid-input-exception)))
     (let [parameters (if (nil? parameter-list)
                        []
-                       (try (vec parameter-list) (catch Exception e (throw (invalid-input-exception)))))
+                       (try (vec parameter-list)
+                            (catch Exception e
+                              (throw (invalid-input-exception)))))
           statement (construct-statement connection query parameters)
           has-result-set (.execute statement)
           result-set (when has-result-set (.getResultSet statement))]
@@ -64,7 +71,8 @@
               column-count (.getColumnCount metadata)
               column-types (into {} (map #(get-column-type metadata %)
                                          (range column-count)))
-              results (map #(transform-row column-types %) (resultset-seq result-set))]
+              results (map #(transform-row column-types %)
+                           (resultset-seq result-set))]
           (json/write-str {:success true
                            :results results}))))
     (catch Exception e
@@ -73,12 +81,15 @@
 
 (defn evaluate [connection input output]
   (try
-    (doseq [{query "query", parameters "parameters" :or {parameters []}} (json/read-values input)]
+    (doseq [{query "query", parameters "parameters" :or {parameters []}}
+            (json/read-values input)]
       (.println output (run-query connection query parameters)))
     (catch Exception e
-      (let [message (.getMessage e)]
-        (.println output (json/write-str {:success false
-                                          :message (when message (first (.split message "\n")))}))))))
+      (let [message (.getMessage e)
+            message-text (first (.split message "\n"))]
+        (.println output
+                  (json/write-str {:success false
+                                   :message (when message message-text)}))))))
 
 (defn -main [& args]
   (if-let [{connection-uri :connection-uri, io-mode :io} (cli/parse-opts args)]

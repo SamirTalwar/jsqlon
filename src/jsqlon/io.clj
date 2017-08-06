@@ -2,7 +2,9 @@
   (:import [java.io BufferedReader File IOException PrintWriter]
            [java.nio.channels Channels SelectionKey]
            [jnr.enxio.channels NativeSelectorProvider]
-           [jnr.unixsocket UnixServerSocket UnixServerSocketChannel UnixSocketAddress UnixSocketChannel]))
+           [jnr.unixsocket
+            UnixServerSocket UnixServerSocketChannel
+            UnixSocketAddress UnixSocketChannel]))
 
 (defn- with-stdin [behaviour]
   (let [reader (BufferedReader. *in*)

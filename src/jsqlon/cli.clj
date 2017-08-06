@@ -14,7 +14,10 @@
     (println summary)))
 
 (defn parse-opts [args]
-  (let [{[connection-uri] :arguments, options :options, summary :summary, errors :errors}
+  (let [{[connection-uri] :arguments
+         options :options
+         summary :summary
+         errors :errors}
         (cli/parse-opts args cli-options)]
     (cond
       errors
