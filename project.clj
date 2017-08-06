@@ -20,4 +20,5 @@
              :dev {:dependencies [[org.clojure/java.jdbc "0.7.0"]
                                   [midje "1.8.3"]]
                    :plugins [[lein-ancient "0.6.10"]
+                             [lein-kibit "0.1.5"]
                              [lein-midje "3.2.1"]]}})

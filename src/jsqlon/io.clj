@@ -30,18 +30,16 @@
         address (UnixSocketAddress. socket-file)
         channel (UnixServerSocketChannel/open)
         selector (.openSelector (NativeSelectorProvider/getInstance))]
-    (do
-      (.configureBlocking channel false)
-      (.bind (.socket channel) address)
-      (.register channel selector SelectionKey/OP_ACCEPT
-                 (server-actor channel selector behaviour))
+    (.configureBlocking channel false)
+    (.bind (.socket channel) address)
+    (.register channel selector SelectionKey/OP_ACCEPT
+               (server-actor channel selector behaviour))
 
-      (while (>= (.select selector) 0)
-        (let [iterator (.iterator (.selectedKeys selector))]
-          (doall (for [selected-key (iterator-seq iterator)]
-                   (do
-                     (.remove iterator)
-                     ((.attachment selected-key))))))))))
+    (while (>= (.select selector) 0)
+      (let [iterator (.iterator (.selectedKeys selector))]
+        (doseq [selected-key (iterator-seq iterator)]
+          (.remove iterator)
+          ((.attachment selected-key)))))))
 
 (defn with-io [mode & args]
   (case mode

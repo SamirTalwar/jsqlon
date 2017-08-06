@@ -16,8 +16,8 @@
   (IllegalArgumentException. "Invalid input.\nFormat:\n{\"query\": \"SQL\", \"parameters\": [1, 'two', 3.0]}"))
 
 (defn get-column-type [metadata i]
-  {(keyword (.getColumnName metadata (+ i 1)))
-   (string/lower-case (.getColumnTypeName metadata (+ i 1)))})
+  {(keyword (.getColumnName metadata (inc i)))
+   (string/lower-case (.getColumnTypeName metadata (inc i)))})
 
 (defmulti transform-json-field type)
 (defmethod transform-json-field nil [_]
@@ -51,14 +51,13 @@
 
 (defn run-query [connection query parameter-list]
   (try
-    (when (not (string? query))
-      (throw (invalid-input-exception)))
+    (when-not (string? query) (throw (invalid-input-exception)))
     (let [parameters (if (nil? parameter-list)
                        []
                        (try (vec parameter-list) (catch Exception e (throw (invalid-input-exception)))))
           statement (construct-statement connection query parameters)
           has-result-set (.execute statement)
-          result-set (if has-result-set (.getResultSet statement) nil)]
+          result-set (when has-result-set (.getResultSet statement))]
       (if-not result-set
         (json/write-str {:success true})
         (let [metadata (.getMetaData result-set)
@@ -79,7 +78,7 @@
     (catch Exception e
       (let [message (.getMessage e)]
         (.println output (json/write-str {:success false
-                                          :message (if message (first (.split message "\n")) nil)}))))))
+                                          :message (when message (first (.split message "\n")))}))))))
 
 (defn -main [& args]
   (if-let [{connection-uri :connection-uri, io-mode :io} (cli/parse-opts args)]
