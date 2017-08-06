@@ -74,7 +74,7 @@
 
 (defn evaluate [connection request]
   (let [{query "query", parameters "parameters" :or {parameters []}}
-        (.readValue json/mapper request java.util.Map)]
+        (json/read-value request)]
     (run-query connection query parameters)))
 
 (defn -main [& args]

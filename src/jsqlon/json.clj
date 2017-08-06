@@ -18,8 +18,11 @@
   (doto (ObjectMapper.)
     (.registerModule module)))
 
-(defn write-str [value]
-  (.writeValueAsString mapper value))
+(defn read-value [json]
+  (.readValue mapper json java.util.Map))
 
 (defn read-str [json]
   (.readTree mapper json))
+
+(defn write-str [value]
+  (.writeValueAsString mapper value))
